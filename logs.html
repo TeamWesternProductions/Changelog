@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Changelog Studio — Logs</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="orb orb-a"></div>
+<div class="orb orb-b"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">⚡</span>
+    <span>CHANGE<b>LOG</b> STUDIO</span>
+  </div>
+  <nav class="nav">
+    <a href="index.html">Create</a>
+    <a href="logs.html" class="active">Logs <span class="count-badge" id="navCount">0</span></a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div class="page-title">
+    <div>
+      <h1>Changelog <span>Logs</span></h1>
+      <p>Restore, edit or resend any past changelog.</p>
+    </div>
+    <a class="btn btn-primary" href="index.html" style="text-decoration:none">＋ New Changelog</a>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="🔍 Search title or description…" />
+    <select id="sort" style="width:auto">
+      <option value="new">Newest first</option>
+      <option value="old">Oldest first</option>
+      <option value="az">Title A–Z</option>
+    </select>
+    <span class="spacer" style="flex:1"></span>
+    <button class="btn btn-danger btn-sm" id="btnClearAll">🗑 Clear all</button>
+  </div>
+
+  <div class="logs" id="logs"></div>
+
+  <div class="empty" id="empty" style="display:none">
+    <div class="big">📂</div>
+    <h3>No changelogs yet</h3>
+    <p>Create your first one and it will show up here.</p>
+    <p style="margin-top:18px"><a class="btn btn-primary" href="index.html" style="text-decoration:none">Create changelog</a></p>
+  </div>
+</main>
+
+<div class="modal-bg" id="confirmModal">
+  <div class="modal" style="max-width:430px">
+    <div class="card-head"><h2 id="cmTitle">Confirm</h2></div>
+    <div class="card-body">
+      <p id="cmText" style="margin:0 0 20px;color:var(--muted);line-height:1.6"></p>
+      <div class="actions" style="border:0;padding-top:0;margin:0">
+        <button class="btn btn-primary" id="cmYes" style="flex:1">Yes</button>
+        <button class="btn btn-ghost" id="cmNo" style="flex:1">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/logs.js"></script>
+</body>
+</html>

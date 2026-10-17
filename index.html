@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Changelog Studio — Create</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="orb orb-a"></div>
+<div class="orb orb-b"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">⚡</span>
+    <span>CHANGE<b>LOG</b> STUDIO</span>
+  </div>
+  <nav class="nav">
+    <a href="index.html" class="active">Create</a>
+    <a href="logs.html">Logs <span class="count-badge" id="navCount">0</span></a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+
+    <!-- ============ EDITOR ============ -->
+    <section class="card">
+      <div class="card-head">
+        <h2 id="formHeading">New Changelog</h2>
+        <button class="btn btn-ghost btn-sm" id="btnCancelEdit" style="display:none">Cancel edit</button>
+      </div>
+      <div class="card-body">
+
+        <div class="webhook">
+          <span class="dot" id="hookDot"></span>
+          <span class="lbl">DISCORD WEBHOOK</span>
+          <input type="url" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." />
+          <button class="btn btn-ghost btn-sm" id="btnSaveHook">Save</button>
+        </div>
+
+        <div class="field">
+          <label for="title">Title <span class="req">*</span></label>
+          <input type="text" id="title" maxlength="256"
+                 placeholder="e.g. v2.4.0 — Dark Mode &amp; Faster Builds" />
+        </div>
+
+        <div class="field">
+          <label for="description">Description <span class="req">*</span></label>
+          <textarea id="description" maxlength="4096"
+            placeholder="Describe what changed…&#10;&#10;**Added**&#10;- One-click export&#10;- Dark mode&#10;&#10;**Fixed**&#10;- Crash when opening large files"></textarea>
+          <div class="counter"><span id="descCount">0</span> / 4096</div>
+          <div class="help">Discord markdown supported: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, lists, quotes, links and headers.</div>
+        </div>
+
+        <div class="field">
+          <label>Image</label>
+          <div class="drop" id="drop">
+            <span class="ico">🖼️</span>
+            <b>Click to upload</b> or drag &amp; drop
+            <small>PNG / JPG / GIF / WEBP — auto-resized to 1400px max</small>
+          </div>
+          <div class="thumb-wrap" id="thumbWrap" style="display:none">
+            <img id="thumbImg" alt="preview" />
+            <div class="thumb-meta">
+              <div class="name" id="thumbName"></div>
+              <div class="size" id="thumbSize"></div>
+            </div>
+            <button class="btn btn-danger btn-sm" id="btnRemoveImg">Remove</button>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" hidden />
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="btnSend">🚀 Send to Discord</button>
+          <button class="btn btn-ghost" id="btnSaveDraft">💾 Save to Logs</button>
+          <span class="spacer"></span>
+          <button class="btn btn-ghost" id="btnClear">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PREVIEW ============ -->
+    <section class="card" id="previewCard">
+      <div class="card-head">
+        <h2>Live Preview</h2>
+        <span class="status draft" id="previewStatus">DRAFT</span>
+      </div>
+
+      <div class="preview-stage">
+        <div class="discord-msg">
+          <div class="avatar">⚡</div>
+          <div class="msg-content">
+            <div class="msg-meta">
+              <span class="bot-name">Changelog</span>
+              <span class="bot-tag">APP</span>
+              <span class="time" id="pvTime">today at 00:00</span>
+            </div>
+
+            <div class="embed" id="embedBox">
+              <div class="e-author">
+                <span class="e-author-name">Release Notes</span>
+              </div>
+              <h3 id="pvTitle">Your changelog title</h3>
+              <div class="e-desc placeholder" id="pvDesc">Your description will appear here…</div>
+
+              <div class="e-img" id="pvImgWrap" style="display:none">
+                <img id="pvImg" alt="" />
+              </div>
+
+              <div class="e-foot">
+                <span id="pvFoot">Changelog System</span>
+                <span>•</span>
+                <span id="pvDate">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-hint">
+        This is exactly how the embed will look in Discord before you send it.
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div class="modal-bg" id="confirmModal">
+  <div class="modal" style="max-width:430px">
+    <div class="card-head"><h2 id="cmTitle">Confirm</h2></div>
+    <div class="card-body">
+      <p id="cmText" style="margin:0 0 20px;color:var(--muted);line-height:1.6"></p>
+      <div class="actions" style="border:0;padding-top:0;margin:0">
+        <button class="btn btn-primary" id="cmYes" style="flex:1">Yes</button>
+        <button class="btn btn-ghost" id="cmNo" style="flex:1">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/editor.js"></script>
+</body>
+</html>
