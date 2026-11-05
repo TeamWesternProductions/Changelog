@@ -1,10 +1,12 @@
 /* ============================================================
-   CHANGELOG SYSTEM — shared core (storage, webhook, utils)
+   PULSE STUDIO — shared core (storage, webhook, utils)
    ============================================================ */
 
 const CL = (() => {
   const LOGS_KEY = "cl.logs.v1";
   const WEBHOOK_KEY = "cl.webhook.v1";
+  const ANN_LOGS_KEY = "cl.announcements.v1";
+  const ANN_WEBHOOK_KEY = "cl.announce.webhook.v1";
 
   /* ---------------- storage ---------------- */
   const load = (key, fallback) => {
@@ -34,6 +36,15 @@ const CL = (() => {
     if (url) localStorage.setItem(WEBHOOK_KEY, url);
     else localStorage.removeItem(WEBHOOK_KEY);
   };
+
+  const getAnnWebhook = () => localStorage.getItem(ANN_WEBHOOK_KEY) || "";
+  const setAnnWebhook = (url) => {
+    if (url) localStorage.setItem(ANN_WEBHOOK_KEY, url);
+    else localStorage.removeItem(ANN_WEBHOOK_KEY);
+  };
+
+  const getAnnouncements = () => load(ANN_LOGS_KEY, []);
+  const setAnnouncements = (logs) => save(ANN_LOGS_KEY, logs);
 
   const uid = () =>
     Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -67,6 +78,33 @@ const CL = (() => {
     return logs[i];
   }
 
+  /* ---------------- announcement CRUD ---------------- */
+  function upsertAnnouncement(entry) {
+    const logs = getAnnouncements();
+    const i = logs.findIndex((l) => l.id === entry.id);
+    if (i >= 0) logs[i] = { ...logs[i], ...entry };
+    else logs.unshift(entry);
+    setAnnouncements(logs);
+    return entry;
+  }
+
+  function getAnnouncement(id) {
+    return getAnnouncements().find((l) => l.id === id) || null;
+  }
+
+  function deleteAnnouncement(id) {
+    setAnnouncements(getAnnouncements().filter((l) => l.id !== id));
+  }
+
+  function touchAnnouncement(id, patch) {
+    const logs = getAnnouncements();
+    const i = logs.findIndex((l) => l.id === id);
+    if (i < 0) return null;
+    logs[i] = { ...logs[i], ...patch, updatedAt: nowISO() };
+    setAnnouncements(logs);
+    return logs[i];
+  }
+
   /* ---------------- validation ---------------- */
   function validate(data) {
     const errors = [];
@@ -82,8 +120,23 @@ const CL = (() => {
     return errors;
   }
 
+  function validateAnnouncement(data) {
+    const errors = [];
+    if (!data.title || !data.title.trim()) errors.push("Title is required.");
+    else if (data.title.trim().length > 256)
+      errors.push("Title must be 256 characters or fewer.");
+    if (!data.description || !data.description.trim())
+      errors.push("Description is required.");
+    else if (data.description.length > 4096)
+      errors.push("Description must be 4096 characters or fewer.");
+    if (data.imageUrl && data.imageUrl.length > 8 * 1024 * 1024)
+      errors.push("Image is too large after encoding.");
+    return errors;
+  }
+
   /* ---------------- discord webhook ---------------- */
   const EMBED_COLOR = 3447003; // #3482F6 blue
+  const ANN_EMBED_COLOR = 10174447; // #9B3FEF purple
 
   function buildEmbed(data) {
     const embed = {
@@ -92,7 +145,22 @@ const CL = (() => {
       description: data.description.trim(),
       color: EMBED_COLOR,
       timestamp: data.date || nowISO(),
-      footer: { text: "Changelog System" },
+      footer: { text: "Pulse Studio" },
+    };
+    if (data.imageUrl && data.imageType === "remote") {
+      embed.image = { url: data.imageUrl };
+    }
+    return embed;
+  }
+
+  function buildAnnouncementEmbed(data) {
+    const embed = {
+      author: { name: "Announcement" },
+      title: data.title.trim(),
+      description: data.description.trim(),
+      color: ANN_EMBED_COLOR,
+      timestamp: data.date || nowISO(),
+      footer: { text: "Pulse Studio • Announcements" },
     };
     if (data.imageUrl && data.imageType === "remote") {
       embed.image = { url: data.imageUrl };
@@ -290,6 +358,67 @@ const CL = (() => {
     }
   }
 
+  /* ---------------- announcement delivery ---------------- */
+  /**
+   * Sends an announcement to a Discord webhook.
+   * Returns { ok, status, message }.
+   */
+  async function sendAnnouncement(webhookUrl, data) {
+    if (!webhookUrl) return { ok: false, message: "No webhook URL set." };
+
+    const embed = buildAnnouncementEmbed(data);
+    const payload = {
+      username: data.botName || "Announcements",
+      embeds: [embed],
+      allowed_mentions: { parse: [] },
+    };
+
+    try {
+      let res;
+
+      if (data.imageBlob) {
+        const fd = new FormData();
+        const ext =
+          data.imageBlob.type === "image/png"
+            ? "png"
+            : data.imageBlob.type === "image/gif"
+            ? "gif"
+            : "jpg";
+        const fname = `announcement-${Date.now()}.${ext}`;
+        embed.image = { url: `attachment://${fname}` };
+        payload.embeds = [embed];
+        fd.append("payload_json", JSON.stringify(payload));
+        fd.append("files[0]", data.imageBlob, fname);
+
+        res = await fetch(webhookUrl, { method: "POST", body: fd });
+      } else {
+        res = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (res.status === 204 || res.ok) {
+        return { ok: true, status: res.status, message: "Announcement sent." };
+      }
+      const txt = await res.text().catch(() => "");
+      return {
+        ok: false,
+        status: res.status,
+        message: `Discord rejected the request (${res.status}) ${txt}`.trim(),
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        message:
+          "Network error — check the webhook URL and your connection. (" +
+          (err && err.message ? err.message : "unknown") +
+          ")",
+      };
+    }
+  }
+
   /* ---------------- images ---------------- */
   const MAX_DIM = 1400;
 
@@ -397,11 +526,22 @@ const CL = (() => {
     }, ms);
   }
 
+  document.addEventListener("DOMContentLoaded", () => {
+    const logCount = document.getElementById("navCount");
+    if (logCount) logCount.textContent = getLogs().length;
+    const annCount = document.getElementById("navCountAnn");
+    if (annCount) annCount.textContent = getAnnouncements().length;
+  });
+
   return {
     getLogs, setLogs, getWebhook, setWebhook,
     upsertLog, getLog, deleteLog, touchLog,
-    uid, nowISO, validate, sendToDiscord,
-    readAndCompressImage, buildEmbed, dataURLtoBlob, renderMarkdown,
+    getAnnouncements, setAnnouncements, getAnnWebhook, setAnnWebhook,
+    upsertAnnouncement, getAnnouncement, deleteAnnouncement, touchAnnouncement,
+    uid, nowISO, validate, validateAnnouncement,
+    sendToDiscord, sendAnnouncement,
+    readAndCompressImage, buildEmbed, buildAnnouncementEmbed,
+    dataURLtoBlob, renderMarkdown,
     fmtDate, fmtBytes, escapeHtml, toast,
   };
 })();
