@@ -1,5 +1,5 @@
 /* ============================================================
-   CHANGELOG SYSTEM — editor page
+   PULSE STUDIO — changelog editor page
    ============================================================ */
 
 (() => {
@@ -83,7 +83,7 @@
       els.pvDesc.classList.remove("max-h");
     }
 
-    els.pvFoot.textContent = "Changelog System";
+    els.pvFoot.textContent = "Pulse Studio";
 
     const now = new Date();
     els.pvDate.textContent = CL.fmtDate(now.toISOString());
