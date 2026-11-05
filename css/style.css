@@ -1,5 +1,5 @@
 /* ============================================================
-   CHANGELOG SYSTEM — Blue / Black modern UI
+   PULSE STUDIO — Blue / Black modern UI
    ============================================================ */
 
 :root {
@@ -104,11 +104,9 @@ body::before {
   width: 36px;
   height: 36px;
   border-radius: 11px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%);
+  display: block;
+  flex: none;
   box-shadow: 0 6px 22px rgba(59, 130, 246, 0.5);
-  font-size: 18px;
 }
 
 .brand span b { color: var(--blue-2); }
@@ -149,6 +147,12 @@ body::before {
   padding: 3px 9px;
   border-radius: 999px;
   margin-left: 6px;
+}
+
+@media (max-width: 720px) {
+  .topbar { flex-wrap: wrap; padding: 12px 16px; }
+  .nav { margin-left: 0; width: 100%; overflow-x: auto; justify-content: flex-start; }
+  .nav a { white-space: nowrap; }
 }
 
 /* ============================ LAYOUT ============================ */
@@ -629,6 +633,53 @@ input::placeholder, textarea::placeholder { color: #4d6282; }
   border-top: 1px solid var(--line);
   background: rgba(3, 6, 14, 0.5);
 }
+
+/* ============================ ANNOUNCEMENT ============================ */
+.ann-avatar {
+  background: linear-gradient(135deg, #a855f7, #d946ef);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+}
+
+.msg-meta .bot-tag.ann-tag { background: #a855f7; }
+
+.msg-mention { margin-bottom: 7px; }
+
+.mention-pill {
+  display: inline-block;
+  background: rgba(88, 101, 242, 0.3);
+  color: #dee0fc;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.ann-embed::before {
+  background: linear-gradient(180deg, #a855f7, #d946ef);
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.7);
+}
+
+.ann-embed .e-author::before {
+  content: "📣";
+  background: linear-gradient(135deg, #a855f7, #d946ef);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.65);
+}
+
+.ann-embed .e-author-name { color: #c084fc; }
+
+.ann-embed h3 { text-shadow: 0 2px 18px rgba(168, 85, 247, 0.35); }
+
+.ann-embed .e-desc a { color: #c084fc; }
+.ann-embed .e-desc li::marker { color: #c084fc; }
+.ann-embed .e-desc blockquote { border-left-color: #a855f7; }
+.ann-embed .e-desc code {
+  background: rgba(168, 85, 247, 0.14);
+  border-color: rgba(192, 132, 252, 0.25);
+  color: #d8b4fe;
+}
+
+.ann-card .log-cover .no-img { color: #4c2a72; }
 
 /* ============================ LOGS PAGE ============================ */
 .page-title {
