@@ -1,5 +1,5 @@
 /* ============================================================
-   CHANGELOG SYSTEM — logs page (restore / edit / resend)
+   PULSE STUDIO — changelog logs page (restore / edit / resend)
    ============================================================ */
 
 (() => {
